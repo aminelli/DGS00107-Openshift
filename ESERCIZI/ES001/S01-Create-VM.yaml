@@ -1,0 +1,76 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: debian13-vm
+  namespace: default
+  labels:
+    app: debian13-vm
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: debian13-vm-data
+      spec:
+        source:
+          blank: {}
+        storage:
+          resources:
+            requests:
+              storage: 10Gi
+          # storageClassName: <la-tua-storageclass>   # opzionale, altrimenti usa la default
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: debian13-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        memory:
+          guest: 4Gi
+        devices:
+          disks:
+            - name: rootdisk
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: datadisk
+              serial: datadisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: rootdisk
+          containerDisk:
+            image: quay.io/containerdisks/debian:13
+        - name: datadisk
+          dataVolume:
+            name: debian13-vm-data
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              hostname: debian13-vm
+              ssh_pwauth: true
+              chpasswd:
+                expire: false
+                users:
+                  - name: debian
+                    password: debian
+                    type: text
+              fs_setup:
+                - device: /dev/disk/by-id/virtio-datadisk
+                  filesystem: ext4
+                  partition: none
+                  label: data
+              mounts:
+                - [ /dev/disk/by-id/virtio-datadisk, /data, ext4, "defaults,nofail", "0", "2" ]

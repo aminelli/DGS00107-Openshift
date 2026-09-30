@@ -9,6 +9,16 @@ spec:
   runStrategy: Always
   dataVolumeTemplates:
     - metadata:
+        name: debian13-vm-root
+      spec:
+        source:
+          http:
+            url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2
+        storage:
+          resources:
+            requests:
+              storage: 3Gi    
+    - metadata:
         name: debian13-vm-data
       spec:
         source:
@@ -16,7 +26,7 @@ spec:
         storage:
           resources:
             requests:
-              storage: 10Gi
+              storage: 2Gi
           # storageClassName: <la-tua-storageclass>   # opzionale, altrimenti usa la default
   template:
     metadata:
@@ -50,8 +60,8 @@ spec:
       terminationGracePeriodSeconds: 60
       volumes:
         - name: rootdisk
-          containerDisk:
-            image: quay.io/containerdisks/debian:13
+          dataVolume:
+            name: debian13-vm-root
         - name: datadisk
           dataVolume:
             name: debian13-vm-data

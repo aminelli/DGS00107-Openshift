@@ -2,6 +2,7 @@ apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
   name: debian13
+  namespace: default
   labels:
     app: debian13
 spec:
@@ -74,39 +75,17 @@ spec:
           cloudInitNoCloud:
             userData: |
               #cloud-config
-              hostname: debian13
               timezone: Europe/Rome
               locale: it_IT.UTF-8
-              
-              #user: debian
-              #password: debian
-              #chpasswd:
-              #  expire: false
-              #ssh_pwauth: true
-
-              users:
-                - name: debian
-                  gecos: Utente Debian
-                  groups: [sudo]
-                  shell: /bin/bash
-                  sudo: "ALL=(ALL) NOPASSWD:ALL"
-                  lock_passwd: false
-                  ssh_authorized_keys:
-                    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDWLVjB2r2pRquMPtmI/8brPq9vwc8/PJzih1/Alnbkmhv60W0EuB5adWPktX8MHsKZnaClNGrYqj18P3beD6j66RmiJkuppl0TACDb6PqfuN/E0SSbuHw8xPZLp50XKj71AITW34h9JeoX8NDVVS0d1Y3+ySXO4ITAhxWAIROCafV8CQvJEPy72/IcdLj21PVznLxb2uR82LrI06acHM+0psIf98ZqTi4u2to0P4XIYLbWZdkjS2o4dim/9YV11GrR09YfnTNPhjhtOt+e/s5ZbvE/KahFriKuwXUaII7x0NvcMSmj7dgGu3HxLNe1mZrdmTQNmfZ6UcvT+AniCShXOdHRckeK6oLvkdx1J0qUA0a0Ze0VkKSa4f1uC+I5Svs3jqFqmy2Uu8REVaajAOyyLj8Y2wacZwdlaINwPM1u5ewFezhIp1L+xzGiMEZYkGBywmldoJyTa/mBTWxt4pBDqitiGrWPjckFNBGk14ebG7AwFh5KiG0impvZxPkbMFE= sandbox@cnv
-
-              ssh_pwauth: true
+              user: debian
+              password: debian
               chpasswd:
                 expire: false
-                users:
-                  - name: debian
-                    password: "debian"
-                    type: text
-              
+              ssh_pwauth: true
               package_update: true
               package_upgrade: false
               packages:
                 - qemu-guest-agent
-                - openssh-server
                 - curl
                 - vim
                 - nano
@@ -120,6 +99,5 @@ spec:
                   overwrite: false
               runcmd:
                 - systemctl enable --now qemu-guest-agent
-                - systemctl enable --now ssh              
               mounts:
                 - [ "LABEL=data", /data, ext4, "defaults,nofail", "0", "2" ]
